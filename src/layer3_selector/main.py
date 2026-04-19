@@ -1,0 +1,56 @@
+from shared.config_loader import load_portfolio
+
+from .weights import AGENT_WEIGHTS, MIN_SCORE_THRESHOLD, TOP_N
+
+
+def _weighted_score(analysis: dict) -> float:
+    total = 0.0
+    for agent, weight in AGENT_WEIGHTS.items():
+        score = analysis.get(agent, {}).get("score", 0)
+        total += score * weight
+    return round(total, 4)
+
+
+def run_selector(analyses: list[dict]) -> list[dict]:
+    portfolio = load_portfolio()
+    portfolio_tickers = {p["ticker"] for p in portfolio.get("positions", [])}
+
+    scored = []
+    for analysis in analyses:
+        ticker = next(
+            (
+                v.get("ticker")
+                for v in analysis.values()
+                if isinstance(v, dict) and v.get("ticker")
+            ),
+            None,
+        )
+        if ticker is None:
+            continue
+        entry = {
+            "ticker": ticker,
+            "weighted_score": _weighted_score(analysis),
+            "in_portfolio": ticker in portfolio_tickers,
+            "analysis": analysis,
+        }
+        scored.append(entry)
+
+    scored.sort(key=lambda x: x["weighted_score"], reverse=True)
+
+    portfolio_entries = [e for e in scored if e["in_portfolio"]]
+    non_portfolio = [e for e in scored if not e["in_portfolio"]]
+
+    top = non_portfolio[:TOP_N]
+
+    seen = {e["ticker"] for e in top}
+    for e in portfolio_entries:
+        if e["weighted_score"] < MIN_SCORE_THRESHOLD:
+            print(
+                f"UWAGA: {e['ticker']} w portfolio ma weighted_score"
+                f" {e['weighted_score']} poniżej progu {MIN_SCORE_THRESHOLD}"
+            )
+        if e["ticker"] not in seen:
+            top.append(e)
+
+    top.sort(key=lambda x: x["weighted_score"], reverse=True)
+    return top

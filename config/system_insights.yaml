@@ -1,0 +1,15 @@
+agent_accuracy:
+  fundamental:
+    predictions: 0
+    accurate: 0
+  technical:
+    predictions: 0
+    accurate: 0
+  sentiment:
+    predictions: 0
+    accurate: 0
+  ownership:
+    predictions: 0
+    accurate: 0
+assumption_patterns: []
+portfolio_manager_biases: []
