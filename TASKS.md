@@ -26,6 +26,8 @@ Nie kopiuj pełnej treści zadania.
 
 ## Backlog
 
+*(brak)*
+
 ---
 
 ## Zablokowane / On hold

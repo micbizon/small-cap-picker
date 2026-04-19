@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-19 — TASK-015: Centralizacja MAX_WORKERS przez zmienną środowiskową
+
+Dodano `get_max_workers()` do `config_loader.py` — czyta `MAX_WORKERS` z `.env`, domyślnie `4`. We wszystkich trzech miejscach z hardkodowanymi wartościami (`layer2_analysis/main.py` → 4, `layer4_cases/main.py` → 3, `pipeline/orchestrator.py` → 8×2) zastąpiono stałe wywołaniem `get_max_workers()` (w orchestratorze jako `min(len(tickers), get_max_workers())`). Dodano `MAX_WORKERS=` do `.env.example`.
+
+---
+
 ## 2026-04-19 — TASK-014: Naprawa parsowania JSON i retry w warstwie 2 i 4
 
 `_safe_parse_json` w `llm_client.py` przepisany na 4-krokowy fallback: `json.loads(response)` → `json.loads(response[start:end+1])` → `repair_json(response[start:])` (krok c obsługuje ucięty JSON bez zamykającego `}`) → `ValueError`. W `orchestrator.py` naprawiony retry w warstwie 2 i 4: zamiast `_call_with_retry(future.result)` (odczytywał zapamiętany wyjątek z zakończonego future) retry przeniesiony do workerów jako `ex.submit(_call_with_retry, run_parallel_analysis, t)` — równoległość między tickerami zachowana, ponowienie wywołuje agenta od nowa.

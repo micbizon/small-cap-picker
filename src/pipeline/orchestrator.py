@@ -7,7 +7,7 @@ from layer2_analysis.main import run_parallel_analysis
 from layer3_selector.main import run_selector
 from layer4_cases.main import run_cases
 from layer5_portfolio_manager.main import run_portfolio_manager
-from shared.config_loader import load_portfolio, load_watchlist
+from shared.config_loader import get_max_workers, load_portfolio, load_watchlist
 
 _TOP_N_FOR_PM = 5
 
@@ -62,7 +62,9 @@ def run_pipeline(tickers: list[str] | None = None) -> None:
     print(f"\n--- Warstwa 2: Analiza równoległa ({len(layer2_tickers)} tickerów) ---")
 
     layer2_results: dict[str, dict] = {}
-    with ThreadPoolExecutor(max_workers=min(len(layer2_tickers), 8)) as ex:
+    with ThreadPoolExecutor(
+        max_workers=min(len(layer2_tickers), get_max_workers())
+    ) as ex:
         futures = {
             ex.submit(_call_with_retry, run_parallel_analysis, t): t
             for t in layer2_tickers
@@ -81,7 +83,7 @@ def run_pipeline(tickers: list[str] | None = None) -> None:
     # Layer 4 — bull/bear/premortem for all selected, parallel across tickers
     print(f"\n--- Warstwa 4: Bull/Bear/Pre-Mortem ({len(selected)} tickerów) ---")
     layer4_results: dict[str, dict] = {}
-    with ThreadPoolExecutor(max_workers=min(len(selected), 8)) as ex:
+    with ThreadPoolExecutor(max_workers=min(len(selected), get_max_workers())) as ex:
         futures = {
             ex.submit(
                 _call_with_retry, run_cases, entry["ticker"], entry["analysis"]

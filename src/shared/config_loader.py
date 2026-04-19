@@ -66,3 +66,7 @@ def get_llm_config() -> dict:
 def get_active_model() -> str:
     cfg = get_llm_config()
     return "claude" if cfg["use_claude"] else cfg["ollama_model"]
+
+
+def get_max_workers() -> int:
+    return int(os.getenv("MAX_WORKERS", "4"))
