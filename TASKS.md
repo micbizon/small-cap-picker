@@ -8,7 +8,7 @@
 ```
 Pracujemy nad projektem multi-agent investment system.
 Przeczytaj /docs/ARCHITECTURE.md i /TASKS.md zanim zaczniesz.
-Aktywne zadanie to TASK-015.
+Aktywne zadanie to TASK-017.
 Nie zmieniaj nic poza plikami wymienionymi w zadaniu.
 Po zakończeniu zadania: usuń wpis z TASKS.md, zaktualizuj CHANGELOG.md, 
 wpisz datę, 1-3 zdania podsumowania, opisz co faktycznie zostało zrobione tak jak opisałeś w rozumowaniu podejście przed
@@ -25,8 +25,6 @@ Nie kopiuj pełnej treści zadania.
 ---
 
 ## Backlog
-
-*(brak)*
 
 ---
 

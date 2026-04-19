@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-19 — TASK-017: Przekazywanie aktualnych cen rynkowych do agentów
+
+Stworzono `/src/shared/market_data.py` z funkcją `get_price_context(ticker)` opartą na `yfinance.Ticker.fast_info` — zwraca sformatowany string z ceną, 52-tygodniowym minimum i maksimum, a przy wyjątku loguje ostrzeżenie i zwraca pusty string. W `_load_prompt()` warstwy 2 i 4 dodano parametr `price_context: str = ""` z zastąpieniem `{{ PRICE_CONTEXT }}`. Funkcje `run_technical()`, `run_bull()`, `run_bear()` wywołują `get_price_context()` i przekazują wynik do `_load_prompt()`. W `context_builder.py` (warstwa 5) `_portfolio_state_section()` rozszerzono o parametr `price_ctx`, dodany na końcu sekcji "STAN PORTFELA". Placeholder `{{ PRICE_CONTEXT }}` dodany do 4 plików promptów: `02b_technical.md`, `04a_bull.md`, `04b_bear.md`, `05_portfolio_manager.md`.
+
+---
+
 ## 2026-04-19 — TASK-015: Centralizacja MAX_WORKERS przez zmienną środowiskową
 
 Dodano `get_max_workers()` do `config_loader.py` — czyta `MAX_WORKERS` z `.env`, domyślnie `4`. We wszystkich trzech miejscach z hardkodowanymi wartościami (`layer2_analysis/main.py` → 4, `layer4_cases/main.py` → 3, `pipeline/orchestrator.py` → 8×2) zastąpiono stałe wywołaniem `get_max_workers()` (w orchestratorze jako `min(len(tickers), get_max_workers())`). Dodano `MAX_WORKERS=` do `.env.example`.

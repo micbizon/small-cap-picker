@@ -92,7 +92,7 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 │  Prompt: /prompts/agents/05_portfolio_manager.md        │
 │  Kontekst: portfolio.json + decisions_log.json          │
 │                                                         │
-│  Decyzje: BUY / ADD / HOLD / SWAP / PASS                │
+│  Decyzje: BUY / ADD / HOLD / SELL                       │
 │  Output: decyzja + teza + założenia + stop-loss         │
 │  → Zapisuje do decisions_log.json                       │
 └─────────────────────┬───────────────────────────────────┘
