@@ -1,10 +1,14 @@
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 
 from shared.context import load_core_rules
 from shared.llm_client import call_llm
+from shared.logging_config import log_agent_result
 from shared.market_data import get_price_context
+
+logger = logging.getLogger(__name__)
 
 PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts" / "agents"
 
@@ -33,15 +37,21 @@ def _load_prompt(
 
 def run_bull(ticker: str, layer2_context: dict) -> dict:
     price_ctx = get_price_context(ticker)
-    result = call_llm(_load_prompt("04a_bull.md", ticker, layer2_context, price_context=price_ctx))
+    result = call_llm(
+        _load_prompt("04a_bull.md", ticker, layer2_context, price_context=price_ctx)
+    )
     result["ticker"] = ticker
+    log_agent_result(ticker, "bull", result)
     return result
 
 
 def run_bear(ticker: str, layer2_context: dict) -> dict:
     price_ctx = get_price_context(ticker)
-    result = call_llm(_load_prompt("04b_bear.md", ticker, layer2_context, price_context=price_ctx))
+    result = call_llm(
+        _load_prompt("04b_bear.md", ticker, layer2_context, price_context=price_ctx)
+    )
     result["ticker"] = ticker
+    log_agent_result(ticker, "bear", result)
     return result
 
 
@@ -52,4 +62,5 @@ def run_premortem(ticker: str, layer2_context: dict) -> dict:
     )
     result = call_llm(prompt)
     result["ticker"] = ticker
+    log_agent_result(ticker, "premortem", result)
     return result

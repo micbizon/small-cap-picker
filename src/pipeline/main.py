@@ -6,9 +6,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from layer6_feedback.main import run_feedback_loop
 from pipeline.orchestrator import run_pipeline
+from shared.logging_config import setup_logging
 
 
 def main() -> None:
+    setup_logging()
     parser = argparse.ArgumentParser(description="Small-cap investment pipeline")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(

@@ -9,20 +9,7 @@ positions:
     entry_price_currency: USD
     entry_date: "2024-06-01"
     shares: 10
+    current_weight_pct: 20
     decision_id:
 
-  - ticker: TSLA
-    entry_price: 445.00
-    entry_price_currency: USD
-    entry_date: "2024-03-15"
-    shares: 5
-    decision_id:
-
-  - ticker: TEM
-    entry_price: 40.00
-    entry_price_currency: USD
-    entry_date: "2024-11-01"
-    shares: 20
-    decision_id:
-
-cash_pct: 60.0
+cash_pct: 80.0

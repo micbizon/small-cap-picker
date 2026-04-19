@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-04-19 — TASK-019: Naprawa logiki akcji portfolio managera
+
+W `context_builder.py` dodano `_position_section(ticker, portfolio)` która odczytuje `current_weight_pct` z portfolio.yaml i buduje jawny blok "POZYCJA W PORTFELU: TAK/NIE, Aktualny rozmiar: X%" — sekcja trafia do `build_context()` jako nowy element przed danymi L2/L4. W `05_portfolio_manager.md` zastąpiono ogólną listę akcji 3-krokowymi ZASADAMI WYBORU AKCJI z zakazami NIGDY, a w JSON schema `position_size_pct` rozdzielono na `current_position_size_pct` i `target_position_size_pct`. W `_build_decision_payload()` w `main.py` zaktualizowano mapowanie pól z `pm_result`. W `config/decisions_log.yaml` dokonano rename pola we wszystkich wpisach DEC-001…DEC-005 z semantycznym rozróżnieniem (BUY: current=0, target=10; SELL/HOLD: oba=0). Poprawiono też log w `orchestrator.py` pokazujący current→target dla każdego tickera.
+
+---
+
+
+## 2026-04-19 — TASK-018: Centralny system logowania
+
+Stworzono `src/shared/logging_config.py` z `setup_logging()` (StreamHandler + `TimedRotatingFileHandler` na `logs/pipeline.log`, rotacja midnight, backupCount=30, czyszczenie plików decisions starszych niż 90 dni) i `get_decision_logger(ticker)` (idempotentny logger per ticker+dzień, `propagate=False`, zapis do `logs/decisions/YYYY-MM-DD_{ticker}.log`). W `pipeline/main.py` dodano wywołanie `setup_logging()` na początku `main()`. We wszystkich plikach `src/` zastąpiono `print()` przez `logger = logging.getLogger(__name__)` z mapowaniem: postęp → `info`, retry → `warning`, błędy parsowania → `error`, prompty i raw responses → `debug`. W agentach warstwy 2, 4 i 5 dodano `get_decision_logger` z logowaniem score/verdict (info) i raw_analysis (debug, bez obcinania). Naprawiono błąd składni Python 2 w `llm_client.py` (`except json.JSONDecodeError, ValueError` → `except (json.JSONDecodeError, ValueError)`). Dodano `LOG_LEVEL=INFO` do `.env`.
+
+---
+
+
 ## 2026-04-19 — TASK-017: Przekazywanie aktualnych cen rynkowych do agentów
 
 Stworzono `/src/shared/market_data.py` z funkcją `get_price_context(ticker)` opartą na `yfinance.Ticker.fast_info` — zwraca sformatowany string z ceną, 52-tygodniowym minimum i maksimum, a przy wyjątku loguje ostrzeżenie i zwraca pusty string. W `_load_prompt()` warstwy 2 i 4 dodano parametr `price_context: str = ""` z zastąpieniem `{{ PRICE_CONTEXT }}`. Funkcje `run_technical()`, `run_bull()`, `run_bear()` wywołują `get_price_context()` i przekazują wynik do `_load_prompt()`. W `context_builder.py` (warstwa 5) `_portfolio_state_section()` rozszerzono o parametr `price_ctx`, dodany na końcu sekcji "STAN PORTFELA". Placeholder `{{ PRICE_CONTEXT }}` dodany do 4 plików promptów: `02b_technical.md`, `04a_bull.md`, `04b_bear.md`, `05_portfolio_manager.md`.

@@ -14,3 +14,9 @@ tickers:
 - ticker: HIMS
   source: screener
   discovery_date: '2026-04-19'
+- ticker: LMND
+  source: screener
+  discovery_date: '2026-04-19'
+- ticker: IONQ
+  source: screener
+  discovery_date: '2026-04-19'

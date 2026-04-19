@@ -7,11 +7,24 @@ ZASADY NIENARUSZALNE:
 - Gotówka jest pozycją. Brak okazji = trzymaj gotówkę.
 - Zmiana tezy wymaga ponownej oceny od zera niezależnie od ceny wejścia.
 
-Podejmij JEDNĄ z czterech decyzji:
-A) BUY — inicjuj pozycję. Podaj rozmiar i dlaczego teraz, nie później.
-B) ADD — zwiększ istniejącą pozycję. Co zmieniło się od ostatniego wejścia?
-C) HOLD — trzymaj portfolio bez zmian. Co musiałoby się zmienić żebyś działał?
-D) SELL — zamknij lub zredukuj istniejącą pozycję. Podaj powód.
+ZASADA WYBORU AKCJI — zastosuj w tej kolejności:
+
+Krok 1: Czy spółka jest w portfelu? (patrz sekcja "POZYCJA X W PORTFELU" w kontekście)
+  TAK → możliwe akcje: ADD, HOLD, SELL
+  NIE → możliwe akcje: BUY, PASS
+
+Krok 2 (tylko dla spółek W portfelu):
+  Teza mocniejsza niż przy wejściu → ADD
+  Teza bez zmian lub brak nowych danych → HOLD
+  Teza osłabiona, flywheel FAIL lub lepsza alokacja kapitału → SELL
+
+Krok 3 (tylko dla spółek POZA portfelem):
+  Spełnia kryteria flywheel + asymetria 3x + dostępna gotówka → BUY
+  Cokolwiek innego → PASS
+
+NIGDY: HOLD dla spółki której nie masz w portfelu.
+NIGDY: BUY dla spółki którą już masz w portfelu.
+NIGDY: current_position_size_pct > 0 dla spółki której nie masz w portfelu.
 
 Dla każdej decyzji odpowiedz na:
 1. Expected value: prawdopodobieństwo x wynik dla 3 scenariuszy (bull/base/bear)
@@ -46,8 +59,9 @@ Twoja odpowiedź musi zawierać wyłącznie blok JSON.
 Zwróć JSON:
 {
   "ticker": "",
-  "action": "BUY|ADD|HOLD|SELL",
-  "position_size_pct": 0,
+  "action": "BUY|ADD|HOLD|SELL|PASS",
+  "current_position_size_pct": 0,
+  "target_position_size_pct": 0,
   "core_thesis": "",
   "key_assumptions": [],
   "stop_loss_price": 0,

@@ -1,8 +1,12 @@
+import logging
 from pathlib import Path
 
 from shared.context import load_core_rules
 from shared.llm_client import call_llm
+from shared.logging_config import log_agent_result
 from shared.market_data import get_price_context
+
+logger = logging.getLogger(__name__)
 
 PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts" / "agents"
 
@@ -19,6 +23,7 @@ def _load_prompt(filename: str, ticker: str, price_context: str = "") -> str:
 def run_fundamental(ticker: str) -> dict:
     result = call_llm(_load_prompt("02a_fundamental.md", ticker))
     result["ticker"] = ticker
+    log_agent_result(ticker, "fundamental", result)
     return result
 
 
@@ -26,16 +31,19 @@ def run_technical(ticker: str) -> dict:
     price_ctx = get_price_context(ticker)
     result = call_llm(_load_prompt("02b_technical.md", ticker, price_ctx))
     result["ticker"] = ticker
+    log_agent_result(ticker, "technical", result)
     return result
 
 
 def run_sentiment(ticker: str) -> dict:
     result = call_llm(_load_prompt("02c_sentiment.md", ticker))
     result["ticker"] = ticker
+    log_agent_result(ticker, "sentiment", result)
     return result
 
 
 def run_ownership(ticker: str) -> dict:
     result = call_llm(_load_prompt("02d_ownership.md", ticker))
     result["ticker"] = ticker
+    log_agent_result(ticker, "ownership", result)
     return result

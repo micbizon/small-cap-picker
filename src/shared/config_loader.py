@@ -26,7 +26,17 @@ def load_portfolio() -> dict:
 
 
 def load_watchlist() -> dict:
-    return load_yaml(CONFIG_DIR / "watchlist.yaml")
+    path = CONFIG_DIR / "watchlist.yaml"
+    if not path.exists():
+        return {"tickers": []}
+    data = load_yaml(path)
+    if "tickers" not in data:
+        data["tickers"] = []
+    return data
+
+
+def save_watchlist(data: dict) -> None:
+    save_yaml(CONFIG_DIR / "watchlist.yaml", data)
 
 
 def load_decisions_log() -> list:
@@ -70,3 +80,14 @@ def get_active_model() -> str:
 
 def get_max_workers() -> int:
     return int(os.getenv("MAX_WORKERS", "4"))
+
+
+def run_agents_parallel(agents: dict, *args) -> dict:
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=get_max_workers()) as executor:
+        futures = {executor.submit(fn, *args): name for name, fn in agents.items()}
+        for future in as_completed(futures):
+            results[futures[future]] = future.result()
+    return results

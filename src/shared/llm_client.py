@@ -1,10 +1,13 @@
 import json
+import logging
 
 import anthropic
 import httpx
 from json_repair import repair_json
 
 from shared.config_loader import get_llm_config
+
+logger = logging.getLogger(__name__)
 
 _CLAUDE_MODEL = "claude-sonnet-4-6"
 
@@ -60,12 +63,15 @@ def _safe_parse_json(response: str) -> dict:
         except json.JSONDecodeError, ValueError:
             pass
 
+    logger.error(f"JSON parse failed: {response[:200]}")
     raise ValueError(f"Brak JSON w odpowiedzi: {response[:200]}")
 
 
 def call_llm(prompt: str, expect_json: bool = True) -> str | dict:
     cfg = get_llm_config()
+    logger.debug(f"Prompt:\n{prompt}")
     raw = _call_claude(prompt, cfg) if cfg["use_claude"] else _call_ollama(prompt, cfg)
+    logger.debug(f"Raw response:\n{raw}")
     if expect_json:
         return _safe_parse_json(raw)
     return raw

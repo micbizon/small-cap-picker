@@ -1,0 +1,80 @@
+import logging
+import os
+import time
+from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
+
+_LOG_FORMAT = "%(asctime)s %(levelname)-5s [%(name)s] %(message)s"
+_LOGS_DIR = Path(__file__).parent.parent.parent / "logs"
+_DECISIONS_DIR = _LOGS_DIR / "decisions"
+_DECISIONS_MAX_AGE_DAYS = 90
+
+
+def setup_logging() -> None:
+    level_name = os.getenv("LOG_LEVEL", "INFO").upper()
+    level = getattr(logging, level_name, logging.INFO)
+
+    _LOGS_DIR.mkdir(exist_ok=True)
+    _DECISIONS_DIR.mkdir(exist_ok=True)
+
+    _cleanup_old_decisions()
+
+    root = logging.getLogger()
+    if root.handlers:
+        return
+
+    root.setLevel(level)
+    formatter = logging.Formatter(_LOG_FORMAT)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(level)
+    stream_handler.setFormatter(formatter)
+    root.addHandler(stream_handler)
+
+    file_handler = TimedRotatingFileHandler(
+        _LOGS_DIR / "pipeline.log",
+        when="midnight",
+        backupCount=30,
+        encoding="utf-8",
+    )
+    file_handler.setLevel(level)
+    file_handler.setFormatter(formatter)
+    root.addHandler(file_handler)
+
+
+def get_decision_logger(ticker: str) -> logging.Logger:
+    from datetime import date
+
+    name = f"decisions.{date.today().isoformat()}_{ticker}"
+    logger = logging.getLogger(name)
+
+    if logger.handlers:
+        return logger
+
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
+
+    _DECISIONS_DIR.mkdir(exist_ok=True)
+    from datetime import date as _date
+
+    filename = _DECISIONS_DIR / f"{_date.today().isoformat()}_{ticker}.log"
+    handler = logging.FileHandler(filename, encoding="utf-8")
+    handler.setFormatter(logging.Formatter(_LOG_FORMAT))
+    logger.addHandler(handler)
+
+    return logger
+
+
+def log_agent_result(ticker: str, agent_name: str, result: dict) -> None:
+    dec_log = get_decision_logger(ticker)
+    dec_log.info(
+        f"[{agent_name}] score={result.get('score')} verdict={result.get('verdict')}"
+    )
+    dec_log.debug(f"[{agent_name}] raw_analysis: {result.get('raw_analysis', '')}")
+
+
+def _cleanup_old_decisions() -> None:
+    cutoff = time.time() - (_DECISIONS_MAX_AGE_DAYS * 24 * 3600)
+    for f in _DECISIONS_DIR.glob("*.log"):
+        if f.stat().st_mtime < cutoff:
+            f.unlink()

@@ -23,6 +23,15 @@ def _portfolio_state_section(portfolio: dict, price_ctx: str = "") -> str:
     return "\n".join(lines)
 
 
+def _position_section(ticker: str, portfolio: dict) -> str:
+    positions = portfolio.get("positions", [])
+    position = next((p for p in positions if p["ticker"] == ticker), None)
+    if position:
+        size = position.get("current_weight_pct", 0)
+        return f"POZYCJA W PORTFELU: TAK\nAktualny rozmiar: {size}%"
+    return "POZYCJA W PORTFELU: NIE\nAktualny rozmiar: brak pozycji"
+
+
 def build_context(ticker: str, layer2: dict, layer4: dict) -> str:
     price_ctx = get_price_context(ticker)
     decisions_with_feedback = [
@@ -42,6 +51,7 @@ def build_context(ticker: str, layer2: dict, layer4: dict) -> str:
             json.dumps(portfolio, ensure_ascii=False, indent=2),
         ),
         ("STAN PORTFELA", _portfolio_state_section(portfolio, price_ctx)),
+        (f"POZYCJA {ticker} W PORTFELU", _position_section(ticker, portfolio)),
         (
             "POPRZEDNIE DECYZJE Z FEEDBACKIEM (od najnowszych, max 10)",
             json.dumps(recent_feedback, ensure_ascii=False, indent=2),

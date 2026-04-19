@@ -1,6 +1,10 @@
+import logging
+
 from shared.config_loader import load_portfolio
 
 from .weights import AGENT_WEIGHTS, MIN_SCORE_THRESHOLD, TOP_N
+
+logger = logging.getLogger(__name__)
 
 
 def _weighted_score(analysis: dict) -> float:
@@ -45,9 +49,11 @@ def run_selector(analyses: list[dict]) -> list[dict]:
     seen = {e["ticker"] for e in top}
     for e in portfolio_entries:
         if e["weighted_score"] < MIN_SCORE_THRESHOLD:
-            print(
-                f"UWAGA: {e['ticker']} w portfolio ma weighted_score"
-                f" {e['weighted_score']} poniżej progu {MIN_SCORE_THRESHOLD}"
+            logger.warning(
+                "UWAGA: %s w portfolio ma weighted_score %s poniżej progu %s",
+                e["ticker"],
+                e["weighted_score"],
+                MIN_SCORE_THRESHOLD,
             )
         if e["ticker"] not in seen:
             top.append(e)

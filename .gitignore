@@ -36,3 +36,6 @@ Thumbs.db
 *.tar.lz4
 *.tar.zst
 *.tar.zstd
+
+# Logs
+logs/

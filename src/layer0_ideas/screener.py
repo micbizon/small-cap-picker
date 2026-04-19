@@ -17,7 +17,7 @@ def fetch_screener_candidates() -> list[str]:
         overview.set_filter(filters_dict=_FILTERS)
         df = overview.screener_view()
     except Exception as e:
-        logger.error("Finviz screener failed: %s", e)
+        logger.error(f"Finviz screener failed: {e}")
         return []
 
     if df is None or df.empty:
@@ -25,5 +25,5 @@ def fetch_screener_candidates() -> list[str]:
         return []
 
     tickers = df["Ticker"].dropna().str.strip().str.upper().tolist()
-    logger.info("screener: found %d candidates", len(tickers))
+    logger.info(f"screener: found {len(tickers)} candidates")
     return tickers
