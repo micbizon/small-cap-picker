@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-21 — TASK-025: Usunięcie score z bull/bear instancji
+
+Pliki 04c_premortem.md i 04c_premortem_synthesizer.md były już czyste (brak pola score). W 04a_bull.md i 04b_bear.md usunięto pole `"score": 0` z sekcji JSON — synthesizery (04a/04b_bull/bear_synthesizer.md) zachowują score i verdict jako finalne outputy trafiające do warstwy 5.
+
+---
+
 ## 2026-04-21 — TASK-024: Wymuszenie zwięzłości w schematach JSON agentów
 
 W schematach JSON wszystkich 11 plików promptów zastąpiono puste stringi i puste listy opisami z twardymi limitami słownymi. Warstwy 2 (`02a`–`02d`): `summary` ← MAX 2 zdania z liczbą, `key_strengths`/`key_risks` ← MAX 2-3 pozycje po MAX 10 słów, `raw_analysis` ← MAX 50–100 słów. Warstwa 4 pojedyncze instancje (`04a`–`04c`): pola narracyjne z przykładami liczbowymi (np. `financial_stress_result`, `historical_analogs`), `raw_analysis` ← MAX 75 słów. PM (`05`): `rationale` ← wymuszona struktura 3-zdaniowa, `checkin_1yr_criteria` ← MAX 3 warunki z liczbami. Synthesizery (`04a/b/c_synthesizer`): `raw_analysis` ← MAX 150 słów (celowo więcej niż instancje). Sekcje instrukcji przed JSON oraz `CORE_RULES.md` pozostały bez zmian.

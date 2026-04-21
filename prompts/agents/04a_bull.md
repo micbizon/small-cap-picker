@@ -24,7 +24,6 @@ Zwróć wyłącznie JSON:
 {
   "ticker": "",
   "agent": "bull",
-  "score": 0,
   "core_thesis": "MAX 2 zdania. Oba muszą zawierać liczby. Oba muszą być falsifiable.",
   "flywheel_mechanism": "MAX 2 zdania. Mechanizm bez przymiotników — tylko rzeczowniki i liczby.",
   "underappreciated_factor": "MAX 1 zdanie + liczba lub data.",

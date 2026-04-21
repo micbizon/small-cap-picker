@@ -25,7 +25,6 @@ Zwróć wyłącznie JSON:
 {
   "ticker": "",
   "agent": "bear",
-  "score": 0,
   "central_bear_thesis": "MAX 2 zdania. Konkretny mechanizm — nie 'może spaść'.",
   "top_competitive_threat": "Kto + jak + timeline. MAX 2 zdania.",
   "financial_stress_result": "np. Rev -50%: GM spada do 52%, FCF -$180M, runway 14msc.",
