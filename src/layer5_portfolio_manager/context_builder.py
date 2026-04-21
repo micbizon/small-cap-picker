@@ -32,6 +32,12 @@ def _position_section(ticker: str, portfolio: dict) -> str:
     return "POZYCJA W PORTFELU: NIE\nAktualny rozmiar: brak pozycji"
 
 
+def _consensus_section(layer4: dict) -> str:
+    bull_cs = layer4.get("bull", {}).get("consensus_strength", "N/A")
+    bear_cs = layer4.get("bear", {}).get("consensus_strength", "N/A")
+    return f"Bull consensus: {bull_cs}\nBear consensus: {bear_cs}"
+
+
 def build_context(ticker: str, layer2: dict, layer4: dict) -> str:
     price_ctx = get_price_context(ticker)
     decisions_with_feedback = [
@@ -67,6 +73,10 @@ def build_context(ticker: str, layer2: dict, layer4: dict) -> str:
         (
             f"LAYER 4 TEZY DLA {ticker} (bull / bear / pre-mortem)",
             json.dumps(layer4, ensure_ascii=False, indent=2),
+        ),
+        (
+            "PEWNOŚĆ ANALIZY",
+            _consensus_section(layer4),
         ),
     ]
 

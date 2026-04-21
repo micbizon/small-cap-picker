@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-21 — TASK-023: Wielu agentów Bull/Bear/Pre-Mortem z syntezą
+
+Stworzono 3 prompty synthesizer (`04a_bull_synthesizer.md`, `04b_bear_synthesizer.md`, `04c_premortem_synthesizer.md`) — bull/bear stosują logikę konsensus/unikalne sygnały/sprzeczności i zwracają pole `consensus_strength` (HIGH/MEDIUM/LOW na podstawie spreadu score'ów), premortem stosuje deduplikację i ranking skumulowany (HIGH=3/MEDIUM=2/LOW=1) zamiast konsensusu. W `agents.py` wyodrębniono `_run_bull/bear/premortem_single` (obecna logika + log z sufiksem `_instance`), dodano `_run_*_synthesizer` z `_load_synthesizer_prompt` oraz `_get_instances()` z `AGENT_INSTANCES` env var; `run_bull/bear/premortem` uruchamia N instancji równolegle przez `ThreadPoolExecutor`, następnie synthesizer. W `context_builder.py` dodano `_consensus_section()` która odczytuje `consensus_strength` z `layer4["bull"]` i `layer4["bear"]` i dodaje sekcję "PEWNOŚĆ ANALIZY" do kontekstu PM.
+
+---
+
 ## 2026-04-21 — TASK-022: Refaktoryzacja decisions_log — tylko akcje do wykonania
 
 W `05_portfolio_manager.md` zastąpiono JSON schema: `rationale` zamiast `core_thesis`/`key_assumptions`, usunięto `scores`/`premortem_top_risk`/`expected_value_reasoning`, dodano `entry_price` i instrukcję minimalnego wypełnienia dla PASS. W `main.py` uproszczono `_build_decision_payload()` (teraz przyjmuje tylko `ticker` i `pm_result`, bez `layer2`/`layer4`) i dodano wczesny return dla PASS z logiem do dec_log bez zapisu YAML. W `logger.py` wprowadzono `_DECISION_FIELDS` jako whitelist pól zapisywanych do YAML oraz guard `if action == PASS: return`. W `decisions_log.yaml` dodano komentarz dokumentujący schemat.
