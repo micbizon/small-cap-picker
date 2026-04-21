@@ -17,8 +17,8 @@ Zwróć wyłącznie JSON:
   "agent": "fundamental",
   "score": 0,
   "verdict": "PASS|WATCH|REJECT",
-  "summary": "",
-  "key_strengths": [],
-  "key_risks": [],
-  "raw_analysis": ""
+  "summary": "MAX 2 zdania. Co decyduje o verdict. Musi zawierać liczbę.",
+  "key_strengths": ["MAX 3 pozycje. Każda MAX 10 słów z liczbą lub datą."],
+  "key_risks": ["MAX 3 pozycje. Każda MAX 10 słów z konkretnym mechanizmem."],
+  "raw_analysis": "MAX 100 słów. Tylko to czego nie ma w polach wyżej."
 }

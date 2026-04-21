@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-21 — TASK-024: Wymuszenie zwięzłości w schematach JSON agentów
+
+W schematach JSON wszystkich 11 plików promptów zastąpiono puste stringi i puste listy opisami z twardymi limitami słownymi. Warstwy 2 (`02a`–`02d`): `summary` ← MAX 2 zdania z liczbą, `key_strengths`/`key_risks` ← MAX 2-3 pozycje po MAX 10 słów, `raw_analysis` ← MAX 50–100 słów. Warstwa 4 pojedyncze instancje (`04a`–`04c`): pola narracyjne z przykładami liczbowymi (np. `financial_stress_result`, `historical_analogs`), `raw_analysis` ← MAX 75 słów. PM (`05`): `rationale` ← wymuszona struktura 3-zdaniowa, `checkin_1yr_criteria` ← MAX 3 warunki z liczbami. Synthesizery (`04a/b/c_synthesizer`): `raw_analysis` ← MAX 150 słów (celowo więcej niż instancje). Sekcje instrukcji przed JSON oraz `CORE_RULES.md` pozostały bez zmian.
+
+---
+
 ## 2026-04-21 — TASK-023: Wielu agentów Bull/Bear/Pre-Mortem z syntezą
 
 Stworzono 3 prompty synthesizer (`04a_bull_synthesizer.md`, `04b_bear_synthesizer.md`, `04c_premortem_synthesizer.md`) — bull/bear stosują logikę konsensus/unikalne sygnały/sprzeczności i zwracają pole `consensus_strength` (HIGH/MEDIUM/LOW na podstawie spreadu score'ów), premortem stosuje deduplikację i ranking skumulowany (HIGH=3/MEDIUM=2/LOW=1) zamiast konsensusu. W `agents.py` wyodrębniono `_run_bull/bear/premortem_single` (obecna logika + log z sufiksem `_instance`), dodano `_run_*_synthesizer` z `_load_synthesizer_prompt` oraz `_get_instances()` z `AGENT_INSTANCES` env var; `run_bull/bear/premortem` uruchamia N instancji równolegle przez `ThreadPoolExecutor`, następnie synthesizer. W `context_builder.py` dodano `_consensus_section()` która odczytuje `consensus_strength` z `layer4["bull"]` i `layer4["bear"]` i dodaje sekcję "PEWNOŚĆ ANALIZY" do kontekstu PM.

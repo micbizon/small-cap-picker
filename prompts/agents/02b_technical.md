@@ -20,10 +20,10 @@ Zwróć wyłącznie JSON:
   "agent": "technical",
   "score": 0,
   "verdict": "PASS|WATCH|REJECT",
-  "summary": "",
-  "entry_zone": "",
-  "invalidation_level": "",
-  "key_strengths": [],
-  "key_risks": [],
-  "raw_analysis": ""
+  "summary": "MAX 2 zdania. Trend + jakość wejścia.",
+  "entry_zone": "np. $95-102. Jeden powód w MAX 5 słowach.",
+  "invalidation_level": "np. $87.50 — tygodniowe zamknięcie poniżej.",
+  "key_strengths": ["MAX 2 pozycje. MAX 10 słów każda."],
+  "key_risks": ["MAX 2 pozycje. MAX 10 słów każda."],
+  "raw_analysis": "MAX 50 słów."
 }

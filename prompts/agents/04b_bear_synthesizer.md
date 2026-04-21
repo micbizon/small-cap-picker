@@ -34,7 +34,7 @@ Zwróć wyłącznie JSON:
   "what_would_change_mind": "",
   "key_risks": [],
   "consensus_strength": "HIGH|MEDIUM|LOW",
-  "raw_analysis": ""
+  "raw_analysis": "MAX 150 słów. Synthesizer może być bardziej rozbudowany."
 }
 
 Zasady wypełnienia:

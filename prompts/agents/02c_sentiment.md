@@ -19,11 +19,11 @@ Zwróć wyłącznie JSON:
   "agent": "sentiment",
   "score": 0,
   "verdict": "PASS|WATCH|REJECT",
-  "summary": "",
+  "summary": "MAX 2 zdania. Narracja + główny katalizator.",
   "narrative_status": "AHEAD|BEHIND|DISTORTED",
-  "next_catalyst": "",
+  "next_catalyst": "np. Q2 earnings + spodziewany efekt w MAX 10 słowach.",
   "next_catalyst_date": "",
-  "key_strengths": [],
-  "key_risks": [],
-  "raw_analysis": ""
+  "key_strengths": ["MAX 2 pozycje. MAX 10 słów każda."],
+  "key_risks": ["MAX 2 pozycje. MAX 10 słów każda."],
+  "raw_analysis": "MAX 50 słów."
 }

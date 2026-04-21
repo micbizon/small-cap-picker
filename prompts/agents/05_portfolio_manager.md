@@ -63,10 +63,10 @@ Zwróć JSON:
   "current_position_size_pct": 0,
   "target_position_size_pct": 0,
   "entry_price": 0.0,
-  "rationale": "2-3 zdania: dlaczego ta akcja teraz, nie inna.",
+  "rationale": "3 zdania: (1) dlaczego ta akcja teraz, (2) główne ryzyko, (3) co musi być prawdą.",
   "stop_loss_price": 0.0,
-  "stop_loss_fundamental": "Jeden konkretny warunek fundamentalny.",
-  "checkin_1yr_criteria": "Co musi być prawdą za 12 miesięcy."
+  "stop_loss_fundamental": "MAX 1 zdanie. Jeden konkretny warunek z progiem liczbowym.",
+  "checkin_1yr_criteria": "MAX 3 warunki z liczbami. np. DAU >50M, Rev >$250M/kw, GM >71%."
 }
 
 Jeśli action == PASS: wypełnij tylko ticker, action i rationale. Pozostałe pola mogą być null lub 0.

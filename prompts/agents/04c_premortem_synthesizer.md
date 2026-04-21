@@ -33,7 +33,7 @@ Zwróć wyłącznie JSON:
     }
   ],
   "top_blind_spot": "",
-  "raw_analysis": ""
+  "raw_analysis": "MAX 150 słów. Synthesizer może być bardziej rozbudowany."
 }
 
 Zasady wypełnienia:

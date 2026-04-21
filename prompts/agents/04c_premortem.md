@@ -22,13 +22,13 @@ Zwróć wyłącznie JSON:
   "failure_scenarios": [
     {
       "rank": 1,
-      "description": "",
-      "mechanism": "",
+      "description": "MAX 8 słów — nazwa scenariusza.",
+      "mechanism": "MAX 2 zdania — krok po kroku.",
       "type": "company-specific|sector-wide|macro",
       "probability": "LOW|MEDIUM|HIGH",
-      "earliest_warning_signal": ""
+      "earliest_warning_signal": "MAX 1 zdanie. Mierzalny sygnał z progiem."
     }
   ],
-  "top_blind_spot": "",
-  "raw_analysis": ""
+  "top_blind_spot": "MAX 1 zdanie.",
+  "raw_analysis": "MAX 75 słów."
 }
