@@ -42,14 +42,14 @@ def run_pipeline(tickers: list[str] | None = None) -> None:
     portfolio = load_portfolio()
     portfolio_tickers = {p["ticker"] for p in portfolio.get("positions", [])}
 
-    extra = [t for t in portfolio_tickers if t not in tickers]
-    if extra:
-        logger.info(
-            f"Dodano {len(extra)} tickerów z portfolio do pipeline (bypass prescreener): {extra}"
-        )
     all_tickers = list(dict.fromkeys(tickers + list(portfolio_tickers)))
     non_portfolio = [t for t in all_tickers if t not in portfolio_tickers]
     in_portfolio = [t for t in all_tickers if t in portfolio_tickers]
+
+    logger.info(f"Ticki z portfolio (bypass prescreener): {in_portfolio}")
+    logger.info(f"Ticki z watchlist (przez prescreener): {non_portfolio}")
+    if overlap := [t for t in tickers if t in portfolio_tickers]:
+        logger.info(f"Ticki w obu miejscach (watchlist + portfolio): {overlap}")
 
     logger.info(f"--- Warstwa 1: Pre-screener ({len(non_portfolio)} tickerów) ---")
     passing = run_prescreener_batch(non_portfolio)
@@ -57,6 +57,11 @@ def run_pipeline(tickers: list[str] | None = None) -> None:
     _log("L1 prescreener", len(non_portfolio), len(passing_tickers))
 
     layer2_tickers = list(dict.fromkeys(passing_tickers + in_portfolio))
+
+    missing = [t for t in in_portfolio if t not in layer2_tickers]
+    if missing:
+        logger.error(f"BŁĄD: ticki z portfolio nie trafiły do warstwy 2: {missing}")
+
     logger.info(
         f"--- Warstwa 2: Analiza równoległa ({len(layer2_tickers)} tickerów) ---"
     )
@@ -92,6 +97,10 @@ def run_pipeline(tickers: list[str] | None = None) -> None:
             ticker = futures[future]
             layer4_results[ticker] = future.result()
     _log("L4 cases", len(selected), len(layer4_results))
+
+    missing_pm = [t for t in in_portfolio if t not in layer4_results]
+    if missing_pm:
+        logger.error(f"BŁĄD: ticki z portfolio nie trafiły do warstwy 4: {missing_pm}")
 
     top5_tickers = [e["ticker"] for e in selected if not e["in_portfolio"]][
         :_TOP_N_FOR_PM

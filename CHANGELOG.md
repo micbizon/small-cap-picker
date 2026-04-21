@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-21 — TASK-021: Naprawa logowania bypass prescreenera i diagnostyka podziału tickerów
+
+W `run_pipeline()` w `orchestrator.py` zastąpiono blok z `extra` trzema osobnymi logami: lista tickerów z portfolio (bypass prescreener), lista z watchlist (przez prescreener) oraz opcjonalny log tickerów w obu miejscach (walrus operator `overlap`). Dodano dwie asercje `logger.error` — po zbudowaniu `layer2_tickers` sprawdzającą czy `in_portfolio` trafiło do warstwy 2, oraz przed warstwą 5 sprawdzającą obecność `in_portfolio` w `layer4_results` — dzięki czemu problem z cichym wypadaniem tickera z portfolio jest widoczny zanim pipeline zakończy działanie.
+
+---
+
 ## 2026-04-21 — TASK-020: Zmniejszenie losowości agentów
 
 Dodanie zmiennej środowiskowej `ANTHROPIC_TEMPERATURE`, która jest ładowna w `get_llm_config()` w celu zarządzania losowością agentów.
