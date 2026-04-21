@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-04-21 — TASK-020: Zmniejszenie losowości agentów
+
+Dodanie zmiennej środowiskowej `ANTHROPIC_TEMPERATURE`, która jest ładowna w `get_llm_config()` w celu zarządzania losowością agentów.
+
+---
+
+
 ## 2026-04-19 — TASK-019: Naprawa logiki akcji portfolio managera
 
 W `context_builder.py` dodano `_position_section(ticker, portfolio)` która odczytuje `current_weight_pct` z portfolio.yaml i buduje jawny blok "POZYCJA W PORTFELU: TAK/NIE, Aktualny rozmiar: X%" — sekcja trafia do `build_context()` jako nowy element przed danymi L2/L4. W `05_portfolio_manager.md` zastąpiono ogólną listę akcji 3-krokowymi ZASADAMI WYBORU AKCJI z zakazami NIGDY, a w JSON schema `position_size_pct` rozdzielono na `current_position_size_pct` i `target_position_size_pct`. W `_build_decision_payload()` w `main.py` zaktualizowano mapowanie pól z `pm_result`. W `config/decisions_log.yaml` dokonano rename pola we wszystkich wpisach DEC-001…DEC-005 z semantycznym rozróżnieniem (BUY: current=0, target=10; SELL/HOLD: oba=0). Poprawiono też log w `orchestrator.py` pokazujący current→target dla każdego tickera.

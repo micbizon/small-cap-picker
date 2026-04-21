@@ -65,6 +65,7 @@ def get_llm_config() -> dict:
         return {
             "use_claude": use_claude,
             "anthropic_api_key": os.getenv("ANTHROPIC_API_KEY"),
+            "anthropic_temperature": float(os.getenv("ANTHROPIC_TEMPERATURE", "0.2")),
         }
     return {
         "use_claude": use_claude,

@@ -17,6 +17,7 @@ def _call_claude(prompt: str, cfg: dict) -> str:
     message = client.messages.create(
         model=_CLAUDE_MODEL,
         max_tokens=4096,
+        temperature=cfg.get("anthropic_temperature", 0.2),
         messages=[{"role": "user", "content": prompt}],
     )
     return message.content[0].text
