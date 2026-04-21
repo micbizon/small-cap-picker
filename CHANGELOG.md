@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-21 — TASK-022: Refaktoryzacja decisions_log — tylko akcje do wykonania
+
+W `05_portfolio_manager.md` zastąpiono JSON schema: `rationale` zamiast `core_thesis`/`key_assumptions`, usunięto `scores`/`premortem_top_risk`/`expected_value_reasoning`, dodano `entry_price` i instrukcję minimalnego wypełnienia dla PASS. W `main.py` uproszczono `_build_decision_payload()` (teraz przyjmuje tylko `ticker` i `pm_result`, bez `layer2`/`layer4`) i dodano wczesny return dla PASS z logiem do dec_log bez zapisu YAML. W `logger.py` wprowadzono `_DECISION_FIELDS` jako whitelist pól zapisywanych do YAML oraz guard `if action == PASS: return`. W `decisions_log.yaml` dodano komentarz dokumentujący schemat.
+
+---
+
 ## 2026-04-21 — TASK-021: Naprawa logowania bypass prescreenera i diagnostyka podziału tickerów
 
 W `run_pipeline()` w `orchestrator.py` zastąpiono blok z `extra` trzema osobnymi logami: lista tickerów z portfolio (bypass prescreener), lista z watchlist (przez prescreener) oraz opcjonalny log tickerów w obu miejscach (walrus operator `overlap`). Dodano dwie asercje `logger.error` — po zbudowaniu `layer2_tickers` sprawdzającą czy `in_portfolio` trafiło do warstwy 2, oraz przed warstwą 5 sprawdzającą obecność `in_portfolio` w `layer4_results` — dzięki czemu problem z cichym wypadaniem tickera z portfolio jest widoczny zanim pipeline zakończy działanie.

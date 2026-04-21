@@ -62,13 +62,11 @@ Zwróć JSON:
   "action": "BUY|ADD|HOLD|SELL|PASS",
   "current_position_size_pct": 0,
   "target_position_size_pct": 0,
-  "core_thesis": "",
-  "key_assumptions": [],
-  "stop_loss_price": 0,
-  "stop_loss_fundamental": "",
-  "checkin_1yr_criteria": "",
-  "expected_value_reasoning": "",
-  "portfolio_impact": "",
-  "what_im_not_doing": "",
-  "swap_sell_ticker": ""
+  "entry_price": 0.0,
+  "rationale": "2-3 zdania: dlaczego ta akcja teraz, nie inna.",
+  "stop_loss_price": 0.0,
+  "stop_loss_fundamental": "Jeden konkretny warunek fundamentalny.",
+  "checkin_1yr_criteria": "Co musi być prawdą za 12 miesięcy."
 }
+
+Jeśli action == PASS: wypełnij tylko ticker, action i rationale. Pozostałe pola mogą być null lub 0.

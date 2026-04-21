@@ -18,37 +18,18 @@ PROMPT_PATH = (
 )
 
 
-def _build_decision_payload(
-    ticker: str, pm_result: dict, layer2: dict, layer4: dict
-) -> dict:
-    l2_scores = {
-        agent: layer2.get(agent, {}).get("score", 0)
-        for agent in ("fundamental", "technical", "sentiment", "ownership")
-    }
-    l2_scores["bull"] = layer4.get("bull", {}).get("score", 0)
-    l2_scores["bear"] = layer4.get("bear", {}).get("score", 0)
-
-    scenarios = layer4.get("premortem", {}).get("failure_scenarios", [])
-    top_risk = (
-        scenarios[0].get("description", "")
-        if scenarios
-        else layer4.get("premortem", {}).get("top_blind_spot", "")
-    )
-
+def _build_decision_payload(ticker: str, pm_result: dict) -> dict:
     return {
         "ticker": ticker,
         "action": pm_result.get("action", ""),
         "current_position_size_pct": pm_result.get("current_position_size_pct", 0),
         "target_position_size_pct": pm_result.get("target_position_size_pct", 0),
-        "entry_price": 0.0,
+        "entry_price": pm_result.get("entry_price", 0.0),
         "entry_price_currency": "USD",
-        "core_thesis": pm_result.get("core_thesis", ""),
-        "key_assumptions": pm_result.get("key_assumptions", []),
+        "rationale": pm_result.get("rationale", ""),
         "stop_loss_price": pm_result.get("stop_loss_price", 0.0),
         "stop_loss_fundamental": pm_result.get("stop_loss_fundamental", ""),
         "checkin_1yr_criteria": pm_result.get("checkin_1yr_criteria", ""),
-        "scores": l2_scores,
-        "premortem_top_risk": top_risk,
         "feedback_6m": None,
         "feedback_12m": None,
     }
@@ -69,9 +50,13 @@ def run_portfolio_manager(ticker: str, layer2: dict, layer4: dict) -> dict:
         f"current={pm_result.get('current_position_size_pct', 0)}% "
         f"target={pm_result.get('target_position_size_pct', 0)}%"
     )
-    dec_log.info(f"[portfolio_manager] core_thesis: {pm_result.get('core_thesis', '')}")
+    dec_log.info(f"[portfolio_manager] rationale: {pm_result.get('rationale', '')}")
 
-    payload = _build_decision_payload(ticker, pm_result, layer2, layer4)
+    if pm_result.get("action") == "PASS":
+        dec_log.info("[portfolio_manager] action=PASS — nie zapisuję do decisions_log")
+        return pm_result
+
+    payload = _build_decision_payload(ticker, pm_result)
     payload["date"] = str(date.today())
     save_decision(payload)
 
