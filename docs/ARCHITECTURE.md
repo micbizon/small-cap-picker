@@ -2,10 +2,10 @@
 
 ## Cel systemu
 
-System automatycznej selekcji spółek small/mid-cap (głównie USA, opcjonalnie PL) z przewagą
-wynikającą z małej kapitalizacji — obszaru gdzie duże fundusze instytucjonalne nie mogą efektywnie
-operować. Decyzje inwestycyjne oparte o framework "Costco Algorithm": spółki z flywheel'em
-reinwestującym korzyści skali w niższe ceny / wyższą wartość dla klienta końcowego.
+System automatycznej selekcji spółek small/mid-cap (głównie USA) z przewagą wynikającą z małej
+kapitalizacji — obszaru gdzie duże fundusze instytucjonalne nie mogą efektywnie operować.
+Decyzje inwestycyjne oparte o framework "Costco Algorithm": spółki z flywheel'em reinwestującym
+korzyści skali w niższe ceny / wyższą wartość dla klienta końcowego.
 
 **Zakres kapitalizacji:** $100M – $25B (small/mid-cap)  
 **Horyzont inwestycyjny:** 3–10 lat per pozycja  
@@ -31,7 +31,9 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 
 ## Stack technologiczny
 
-Środowisko systemu jest w całości zarządzane poprzez narzędzie `uv`.
+Środowisko zarządzane przez `uv`. Backend LLM konfigurowany globalnie przez `USE_CLAUDE_API`:
+- `true` → Claude API (`claude-sonnet-4-6`)
+- `false` → Ollama (model z `OLLAMA_MODEL_NAME`, domyślnie `llama3.2:3b`)
 
 ---
 
@@ -40,16 +42,15 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  WARSTWA 0: Idea Generation                             │
-│  Źródła: screeners, 13F małych funduszy, insider buying │
-│  Output: lista TICKER-ów do analizy                     │
+│  Źródła: Finviz screeners, insider buying (OpenInsider) │
+│  Output: lista TICKER-ów → watchlist.yaml               │
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
 │  WARSTWA 1: Pre-Screener (Costco Algorithm Filter)      │
-│  Model: lokalny LLM (Llama 70B)                         │
 │  Prompt: /prompts/agents/01_prescreener.md              │
 │  Output: PASS / CONDITIONAL PASS / REJECT               │
-│  Eliminuje ~70-80% kandydatów tanio (mało tokenów)      │
+│  Ticki z portfolio.yaml omijają tę warstwę              │
 └─────────────────────┬───────────────────────────────────┘
                       │ (tylko PASS i CONDITIONAL PASS)
 ┌─────────────────────▼───────────────────────────────────┐
@@ -57,53 +58,52 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 │                                                         │
 │  ┌───────────────┐  ┌──────────────┐                    │
 │  │ 2A Fundamental│  │ 2B Technical │                    │
-│  │ Llama 70B     │  │ Llama 70B    │                    │
 │  └───────────────┘  └──────────────┘                    │
 │  ┌───────────────┐  ┌──────────────┐                    │
-│  │ 2C Sentiment  │  │ 2D Ownership │ ← nowy agent       │
-│  │ Llama 70B     │  │ Llama 70B    │                    │
+│  │ 2C Sentiment  │  │ 2D Ownership │                    │
 │  └───────────────┘  └──────────────┘                    │
 │                                                         │
-│  Każdy agent zwraca: { score: 1-10, verdict, summary }  │
+│  Każdy zwraca: { score: 1-10, verdict, summary, ... }   │
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
-│  WARSTWA 3: Selekcja Top 10–20                          │
+│  WARSTWA 3: Selekcja                                    │
 │  Ranking weighted score z warstwy 2                     │
-│  Wagi: Fundamental 40%, Technical 20%,                  │
-│        Sentiment 25%, Ownership 15%                     │
-│  + Spółki aktualnie w portfolio (zawsze przechodzą)     │
+│  Wagi: Fundamental 40%, Sentiment 25%,                  │
+│        Technical 20%, Ownership 15%                     │
+│  + Spółki z portfolio (zawsze przechodzą)               │
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
-│  WARSTWA 4: Bull / Bear / Pre-Mortem (3 agenty)         │
+│  WARSTWA 4: Bull / Bear / Pre-Mortem                    │
 │                                                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐  │
-│  │ 4A Bull Case │  │ 4B Bear Case │  │ 4C Pre-Mortem │  │
-│  │ Llama 70B    │  │ Llama 70B    │  │ Llama 70B     │  │
-│  └──────────────┘  └──────────────┘  └───────────────┘  │
+│  Każdy agent uruchamiany AGENT_INSTANCES razy równolegle│
+│  następnie synthesizer wyciąga konsensus:               │
+│                                                         │
+│  [Bull×N] → Bull Synthesizer   → consensus_strength     │
+│  [Bear×N] → Bear Synthesizer   → consensus_strength     │
+│  [PM×N]   → PreMortem Synthesizer → top 5 scenariuszy   │
 │                                                         │
 │  Pre-Mortem: zakłada -65% za 2 lata i odtwarza przyczynę│
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
 │  WARSTWA 5: Portfolio Manager Agent                     │
-│  Model: Claude API (claude-sonnet)                      │
 │  Prompt: /prompts/agents/05_portfolio_manager.md        │
-│  Kontekst: portfolio.json + decisions_log.json          │
+│  Kontekst: portfolio.yaml + decisions_log.yaml          │
+│            + consensus_strength z warstwy 4             │
 │                                                         │
-│  Decyzje: BUY / ADD / HOLD / SELL                       │
-│  Output: decyzja + teza + założenia + stop-loss         │
-│  → Zapisuje do decisions_log.json                       │
+│  Decyzje: BUY / ADD / HOLD / SELL / PASS                │
+│  PASS → tylko log, nie zapisuje do decisions_log.yaml   │
+│  Output: rationale + stop-loss + checkin_1yr_criteria   │
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
 │  WARSTWA 6: Feedback Loop (uruchamiany co 6/12 miesięcy)│
-│  Model: Claude API                                      │
 │  Prompt: /prompts/system/feedback_loop.md               │
-│  Wejście: decisions_log.json (decyzje starsze niż 6 msc)│
-│  Output: ocena założeń, które się sprawdziły, które nie │
-│  → Uczy system rozpoznawać własne błędy                 │
+│  Wejście: decisions_log.yaml (decyzje starsze niż 6 msc)│
+│  Output: ocena rationale i założeń — co się sprawdziło  │
+│  → Zapisuje feedback_6m / feedback_12m                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -112,11 +112,11 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 ## Struktura plików projektu
 
 ```
-/investment-agent
+/small-cap-picker
 │
 ├── /docs
-│   ├── ARCHITECTURE.md        ← ten plik
-│   ├── PHILOSOPHY.md          ← Costco Algorithm szczegółowo
+│   ├── ARCHITECTURE.md
+│   ├── PHILOSOPHY.md
 │
 ├── /prompts
 │   ├── /agents
@@ -126,8 +126,11 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 │   │   ├── 02c_sentiment.md
 │   │   ├── 02d_ownership.md
 │   │   ├── 04a_bull.md
+│   │   ├── 04a_bull_synthesizer.md
 │   │   ├── 04b_bear.md
+│   │   ├── 04b_bear_synthesizer.md
 │   │   ├── 04c_premortem.md
+│   │   ├── 04c_premortem_synthesizer.md
 │   │   └── 05_portfolio_manager.md
 │   └── /system
 │       ├── idea_generation.md
@@ -136,128 +139,116 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 ├── /config
 │   ├── portfolio.yaml         ← aktualne pozycje i ceny wejścia
 │   ├── watchlist.yaml         ← spółki do obserwacji
-│   └── decisions_log.json     ← pełna historia decyzji z tezami
+│   ├── decisions_log.yaml     ← historia decyzji BUY/ADD/HOLD/SELL
+│   └── system_insights.yaml   ← accuracy agentów i wzorce błędów
 │
-├── /src                       ← kod (osobna sprawa)
+├── /src
+│   ├── /layer0_ideas … /layer6_feedback
+│   ├── /pipeline              ← orchestrator + main.py (CLI)
+│   └── /shared                ← llm_client, config_loader, logging, …
 │
-├── .env                       ← zmienne środowiskowe, np nazwa modelu
-├── TASKS.md                   ← kolejka zadań do implementacji
-└── CHANGELOG.md               ← historia zmian systemu
+├── /logs
+│   ├── pipeline.log
+│   └── /decisions             ← YYYY-MM-DD_[TICKER].log (pełna analiza)
+│
+├── .env
+├── TASKS.md
+├── CHANGELOG.md
 └── README.md
 ```
 
 ---
 
-## Modele LLM — podział odpowiedzialności
-
-Do implementacji używamy tylko i wyłącznie modelu **llama3.2:3b**
-
-| Warstwa | Agent | Model | Uzasadnienie |
-|---------|-------|-------|--------------|
-| 1 | Pre-screener | Llama 70B (lokalny) | Prosty filtr tak/nie, duży wolumen, tani |
-| 2A | Fundamental | Llama 70B (lokalny) | Ustrukturyzowana analiza, powtarzalny format |
-| 2B | Technical | Llama 70B (lokalny) | Dane liczbowe, mało interpretacji jakościowej |
-| 2C | Sentiment | Llama 70B (lokalny) | Klasyfikacja sentymentu, duży wolumen |
-| 2D | Ownership | Llama 70B (lokalny) | Ustrukturyzowane dane, powtarzalny format |
-| 4A | Bull | Llama 70B (lokalny) | Generowanie argumentów, niskie ryzyko błędu |
-| 4B | Bear | Llama 70B (lokalny) | Generowanie argumentów, niskie ryzyko błędu |
-| 4C | Pre-Mortem | Llama 70B (lokalny) | Ustrukturyzowane scenariusze |
-| 5 | Portfolio Manager | Claude API | Decyzja wysokiego ryzyka, wymaga najlepszego modelu |
-| 6 | Feedback Loop | Claude API | Złożona ocena jakościowa, uruchamiany rzadko |
-
----
-
 ## Format danych między warstwami
 
-### Output agentów warstwy 2 (standard dla każdego agenta)
+### Output agentów warstwy 2
 
 ```json
 {
   "ticker": "AAPL",
   "agent": "fundamental",
-  "timestamp": "2024-01-15T10:30:00Z",
   "score": 7,
-  "verdict": "PASS",
-  "summary": "Krótkie uzasadnienie (2-3 zdania)",
-  "key_risks": ["ryzyko 1", "ryzyko 2"],
-  "key_strengths": ["siła 1", "siła 2"],
-  "raw_analysis": "Pełna analiza w markdown"
+  "verdict": "PASS|WATCH|REJECT",
+  "summary": "MAX 2 zdania z liczbą.",
+  "key_strengths": ["MAX 3 pozycje, MAX 10 słów każda"],
+  "key_risks": ["MAX 3 pozycje, MAX 10 słów każda"],
+  "raw_analysis": "MAX 100 słów."
 }
 ```
 
-### Schema decisions_log.json (jeden wpis)
+### Output synthesizerów warstwy 4 (bull/bear)
 
 ```json
 {
-  "decision_id": "DEC-042",
-  "date": "2024-01-15",
   "ticker": "AAPL",
-  "action": "BUY",
-  "position_size_pct": 15,
-  "entry_price": 185.50,
-  "currency": "USD",
-  "core_thesis": "Opis tezy w 2-3 zdaniach",
-  "key_assumptions": [
-    "Założenie 1 — mierzalne, falsifiable",
-    "Założenie 2",
-    "Założenie 3"
-  ],
-  "stop_loss_price": 155.00,
-  "stop_loss_fundamental": "Opis kiedy teza jest złamana",
-  "1yr_checkin_criteria": "Co musi być prawdą po 12 miesiącach",
-  "bull_score": 8,
-  "bear_score": 4,
-  "premortem_top_risk": "Najpoważniejszy scenariusz failure",
-  "feedback_6m": null,
-  "feedback_12m": null
+  "agent": "bull",
+  "score": 7,
+  "consensus_strength": "HIGH|MEDIUM|LOW",
+  "core_thesis": "...",
+  "key_assumptions": ["tylko z sekcji KONSENSUS"],
+  "raw_analysis": "MAX 150 słów."
 }
+```
+
+### Schema decisions_log.yaml (jeden wpis)
+
+```yaml
+decision_id: DEC-042
+date: "2026-04-21"
+ticker: AAPL
+action: BUY              # BUY / ADD / HOLD / SELL  (PASS nie jest zapisywany)
+current_position_size_pct: 0
+target_position_size_pct: 15
+entry_price: 185.50
+entry_price_currency: USD
+rationale: "3 zdania: (1) dlaczego teraz, (2) główne ryzyko, (3) co musi być prawdą."
+stop_loss_price: 155.00
+stop_loss_fundamental: "Jeden konkretny warunek z progiem liczbowym."
+checkin_1yr_criteria: "MAX 3 warunki z liczbami."
+feedback_6m: null
+feedback_12m: null
 ```
 
 ---
 
 ## Źródła pomysłów na spółki (Warstwa 0)
 
-**Automatyczne screeners:**
+**Zaimplementowane:**
 - Finviz: market cap $100M–$25B, revenue growth YoY > 15%, insider ownership > 10%
-- OpenInsider.com: insider buying (CEO/CFO kupuje za własne pieniądze)
-- SEC EDGAR: nowe spin-offy i IPO z ostatnich 18 miesięcy
+- OpenInsider: insider buying CEO/CFO (aktualnie stub — endpoint niedostępny)
 
-**Półautomatyczne (wymagają parsowania):**
-- 13F filings funduszy $50M–$500M AUM (small, specjalistyczne fundusze)
-- Transkrypty konferencji: LD Micro, MicroCap Leadership Summit
+**Planowane:**
+- 13F filings funduszy $50M–$500M AUM
+- SEC EDGAR: spin-offy i IPO z ostatnich 18 miesięcy
 
-**Human input node:**
-- Ręczne dodanie do watchlist.json gdy użytkownik odkryje spółkę przez własne doświadczenie
-  z produktem (Peter Lynch trigger)
+**Human input:**
+- Ręczne dodanie do `watchlist.yaml` (Peter Lynch trigger)
 
 ---
 
 ## Zasady position sizing
 
-**Twarda zasada:** żadna pojedyncza pozycja nie może przekroczyć 25% portfolio.
+- Maksimum 25% w jedną pozycję
+- Pierwsza pozycja: maksimum 15% (próbna pozycja)
+- Suma pozycji o podobnym ryzyku makro: maksimum 40%
+- Nowa pozycja przy pełnym portfolio wymaga wskazania której pozycji sprzedać
 
 ---
 
 ## Feedback Loop — zasady działania
 
-Uruchamiany automatycznie dla każdej decyzji starszej niż 6 miesięcy gdzie `feedback_6m = null`.
+Uruchamiany dla każdej decyzji starszej niż 6 miesięcy gdzie `feedback_6m = null`.
 
-Agent porównuje:
-1. Czy `key_assumptions` z dnia decyzji okazały się prawdziwe?
-2. Czy cena zmieniła się zgodnie z tezą, czy mimo trafnej tezy, czy mimo błędnej?
-3. Które sygnały z warstwy 2 były predyktywne, a które misleading?
+Agent ocenia czy `rationale` z dnia decyzji okazał się trafny, które sygnały z warstwy 2
+były predyktywne, a które misleading. Output zapisywany do `feedback_6m` / `feedback_12m`.
 
-Output zapisywany do pól `feedback_6m` i `feedback_12m` w decisions_log.json.
-
-Długoterminowy cel: zidentyfikowanie które agenty i które sygnały mają najwyższą predyktywność
-dla danego typu spółek — i odpowiednie dostosowanie wag w warstwie 3.
+Długoterminowy cel: identyfikacja które agenty mają najwyższą predyktywność i dostosowanie
+wag w warstwie 3.
 
 ---
 
-## Decyzje do podjęcia (open questions)
+## Otwarte pytania
 
-- [ ] Skąd pobierać dane finansowe do agenta fundamental? (Yahoo Finance API, Polygon.io, inne?)
 - [ ] Jak często uruchamiać pełny pipeline? (tygodniowo? na żądanie?)
-- [ ] Czy system ma obsługiwać spółki polskie (GPW)? Inne źródła danych.
-- [ ] Gdzie przechowywać decisions_log.json długoterminowo? (lokalnie, GitHub, baza danych?)
-- [ ] Alert system — czy portfolio manager ma wysyłać powiadomienia przy stop-loss?
+- [ ] Czy system ma obsługiwać spółki polskie (GPW)?
+- [ ] Alert system przy stop-loss?
