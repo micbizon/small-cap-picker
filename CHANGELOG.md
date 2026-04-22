@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-22 — TASK-026: Dane finansowe i wolumenowe z yfinance do agentów
+
+Dodano `get_financial_context(ticker)` w `market_data.py` — pobiera z `yf.Ticker.info` 7 metryk (Revenue TTM, growth YoY, gross margin, FCF, dług netto, insider%, EV/Revenue) i zwraca pusty string przy braku danych lub błędzie (z `logger.warning`). Rozszerzono `get_price_context()` o historię 30d: `hist["Volume"].tail(20).mean()` jako avg_vol i ratio dzisiejszego wolumenu do tej średniej. `_load_prompt()` w `agents.py` otrzymał parametr `financial_context` i replace dla `{{ FINANCIAL_CONTEXT }}`; `run_fundamental()` i `run_ownership()` wywołują `get_financial_context()` przed budowaniem promptu. Placeholder `{{ FINANCIAL_CONTEXT }}` wstawiony po `{{ CORE_RULES }}` w `02a_fundamental.md` i `02d_ownership.md`.
+
+---
+
 ## 2026-04-21 — TASK-025: Usunięcie score z bull/bear instancji
 
 Pliki 04c_premortem.md i 04c_premortem_synthesizer.md były już czyste (brak pola score). W 04a_bull.md i 04b_bear.md usunięto pole `"score": 0` z sekcji JSON — synthesizery (04a/04b_bull/bear_synthesizer.md) zachowują score i verdict jako finalne outputy trafiające do warstwy 5.
