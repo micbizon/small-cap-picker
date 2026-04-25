@@ -29,13 +29,16 @@ uv sync
 ## Uruchamianie
 
 ```bash
-# pełny pipeline (automatyczne odkrywanie tickerów przez screeners)
+# Warstwa 0: znajdź spółki przez Finviz/OpenInsider → data/watchlist.yaml
+uv run python src/pipeline/main.py --discover
+
+# Pipeline L1–L5 na spółkach z watchlist.yaml (+ zawsze spółki z portfolio)
 uv run python src/pipeline/main.py
 
-# konkretne tickery
-uv run python src/pipeline/main.py --tickers AAPL TSLA
+# Pipeline L1–L5 na konkretnych tickerach (własny dobór)
+uv run python src/pipeline/main.py --tickers AAPL COST DUOL
 
-# tylko feedback loop (warstwa 6)
+# Feedback loop (warstwa 6)
 uv run python src/pipeline/main.py --feedback
 ```
 

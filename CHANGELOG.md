@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-04-25 — Naprawa: błąd parsowania JSON w prescreenerze nie wysadza pipeline'u
+
+Ticker `PL` (Planet Labs, NYSE) spowodował konwersacyjną odpowiedź Claude zamiast JSON — model zinterpretował dwuliterowy ticker jako kod języka polskiego. Nieobsłużony `ValueError` przerywał cały pipeline. W `run_prescreener_batch` dodano `try/except` wokół `run_prescreener(ticker)` — wyjątek jest logowany jako `WARNING` i ticker jest traktowany jako REJECT, pipeline kontynuuje działanie. Przy okazji naprawiono składnię Python 2 w `llm_client.py` linia 64: `except json.JSONDecodeError, ValueError:` → `except (json.JSONDecodeError, ValueError):`.
+
+---
+
+## 2026-04-25 — Logowanie w warstwie 1 (prescreener)
+
+W `layer1_prescreener/agent.py` dodano `logger.debug` z treścią promptu oraz `log_agent_result(ticker, "prescreener", result)` zapisujący verdict do per-ticker decision loggera. W `layer1_prescreener/main.py` dodano `logger.info` per ticker z verdyktem oraz podsumowanie `X/N tickerów przeszło filtr` po zakończeniu batcha.
+
+---
+
+## 2026-04-25 — Flaga --discover w CLI
+
+Dodano flagę `--discover` do grupy wzajemnie wykluczających się argumentów w `pipeline/main.py` — wywołuje `run_idea_generation()` z warstwy 0 (Finviz screener + OpenInsider stub) i zapisuje wyniki do `data/watchlist.yaml`. Pipeline analityczny (L1–L5) pozostaje bez zmian i nadal czyta z watchlist przy wywołaniu bez flag.
+
+---
+
 ## 2026-04-25 — Rename config/ → data/
 
 Katalog `config/` przemianowany na `data/` — wszystkie pliki YAML (`portfolio.yaml`, `watchlist.yaml`, `decisions_log.yaml`, `decisions_log_test.yaml`, `system_insights.yaml`) to dynamiczny stan systemu generowany w runtime, nie konfiguracja parametrów. W `config_loader.py` zmieniono nazwę stałej `CONFIG_DIR` → `DATA_DIR` (replace_all) i ścieżkę `"config"` → `"data"`; `layer6_feedback/main.py` zaktualizowany w imporcie i w `_PROD_LOG`; `.gitignore` i `ARCHITECTURE.md` zaktualizowane.

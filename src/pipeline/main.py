@@ -4,6 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from layer0_ideas.aggregator import run_idea_generation
 from layer6_feedback.main import run_feedback_loop
 from pipeline.orchestrator import run_pipeline
 from shared.logging_config import setup_logging
@@ -13,6 +14,11 @@ def main() -> None:
     setup_logging()
     parser = argparse.ArgumentParser(description="Small-cap investment pipeline")
     group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--discover",
+        action="store_true",
+        help="Warstwa 0: znajdź spółki przez Finviz/OpenInsider i dodaj do watchlist.yaml",
+    )
     group.add_argument(
         "--tickers",
         nargs="+",
@@ -26,7 +32,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.feedback:
+    if args.discover:
+        run_idea_generation()
+    elif args.feedback:
         run_feedback_loop()
     elif args.tickers:
         run_pipeline(tickers=args.tickers)

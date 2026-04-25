@@ -61,7 +61,7 @@ def _safe_parse_json(response: str) -> dict:
             result = json.loads(repair_json(response[start:]))
             if isinstance(result, dict):
                 return result
-        except json.JSONDecodeError, ValueError:
+        except (json.JSONDecodeError, ValueError):
             pass
 
     logger.error(f"JSON parse failed: {response[:200]}")

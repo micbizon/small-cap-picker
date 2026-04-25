@@ -5,9 +5,12 @@ from finvizfinance.screener.overview import Overview
 logger = logging.getLogger(__name__)
 
 _FILTERS = {
-    "Market Cap.": "Small to Large ($1bln to $100bln)",
+    "Market Cap.": "+Mid (over $2bln)",
+    "Country": "USA",
     "Sales growthqtr over qtr": "Over 15%",
     "InsiderOwnership": "Over 10%",
+    "Gross Margin": "Over 30%",
+    "Current Ratio": "Over 1.5",
 }
 
 
