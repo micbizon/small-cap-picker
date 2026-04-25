@@ -9,6 +9,14 @@ load_dotenv()
 CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
 
 
+def _sort_watchlist(data: dict) -> dict:
+    if "tickers" in data and isinstance(data["tickers"], list):
+        data["tickers"] = sorted(
+            data["tickers"], key=lambda t: t["ticker"] if isinstance(t, dict) else t
+        )
+    return data
+
+
 def load_yaml(path: str | Path) -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
@@ -32,11 +40,11 @@ def load_watchlist() -> dict:
     data = load_yaml(path)
     if "tickers" not in data:
         data["tickers"] = []
-    return data
+    return _sort_watchlist(data)
 
 
 def save_watchlist(data: dict) -> None:
-    save_yaml(CONFIG_DIR / "watchlist.yaml", data)
+    save_yaml(CONFIG_DIR / "watchlist.yaml", _sort_watchlist(data))
 
 
 def load_decisions_log() -> list:

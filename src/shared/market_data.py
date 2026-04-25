@@ -5,6 +5,14 @@ import yfinance as yf
 logger = logging.getLogger(__name__)
 
 
+def get_current_price(ticker: str) -> float | None:
+    try:
+        return yf.Ticker(ticker).fast_info["lastPrice"]
+    except Exception as e:
+        logger.warning(f"get_current_price({ticker}) failed: {e}")
+        return None
+
+
 def get_price_context(ticker: str) -> str:
     try:
         stock = yf.Ticker(ticker)
