@@ -5,7 +5,6 @@ from shared.config_loader import (
     load_portfolio,
     load_system_insights,
 )
-from shared.context import load_core_rules
 from shared.market_data import get_price_context
 
 
@@ -51,7 +50,6 @@ def build_context(ticker: str, layer2: dict, layer4: dict) -> str:
     portfolio = load_portfolio()
 
     sections = [
-        ("CORE INVESTMENT RULES", load_core_rules()),
         (
             "CURRENT PORTFOLIO",
             json.dumps(portfolio, ensure_ascii=False, indent=2),

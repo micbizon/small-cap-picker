@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-25 — TASK-027: Decision matrix w portfolio managerze
+
+Z `context_builder.py` usunięto sekcję `CORE INVESTMENT RULES` (wywołanie `load_core_rules()` i odpowiadający import) — jej treść pokrywała się z hardkodowanymi regułami w prompcie, generując duplikację w kontekście wysyłanym do LLM. W `05_portfolio_manager.md` zastąpiono jakościową sekcję "ZASADA WYBORU AKCJI" trzystopniową matrycą decyzyjną (KROK 1: wypełnienie 7 pól liczbowych z danych warstw 2/4; KROK 2: mechaniczne reguły progowe dla BUY/PASS/SELL/ADD/HOLD; KROK 3: uzasadnienie bez reinterpretacji); usunięto placeholder `{{ PRICE_CONTEXT }}` który nigdy nie był podmieniony w `main.py` (cena jest już w FULL_CONTEXT przez sekcję STAN PORTFELA); zaktualizowano opis pola `rationale` w schemacie JSON do formatu `"Matryca: flywheel=X/5, bull=X, bear=X, upside=Xx, HIGH_risks=X."`.
+
+---
+
 ## 2026-04-22 — TASK-026: Dane finansowe i wolumenowe z yfinance do agentów
 
 Dodano `get_financial_context(ticker)` w `market_data.py` — pobiera z `yf.Ticker.info` 7 metryk (Revenue TTM, growth YoY, gross margin, FCF, dług netto, insider%, EV/Revenue) i zwraca pusty string przy braku danych lub błędzie (z `logger.warning`). Rozszerzono `get_price_context()` o historię 30d: `hist["Volume"].tail(20).mean()` jako avg_vol i ratio dzisiejszego wolumenu do tej średniej. `_load_prompt()` w `agents.py` otrzymał parametr `financial_context` i replace dla `{{ FINANCIAL_CONTEXT }}`; `run_fundamental()` i `run_ownership()` wywołują `get_financial_context()` przed budowaniem promptu. Placeholder `{{ FINANCIAL_CONTEXT }}` wstawiony po `{{ CORE_RULES }}` w `02a_fundamental.md` i `02d_ownership.md`.
