@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
+DATA_DIR = Path(__file__).parent.parent.parent / "data"
 
 
 def _sort_watchlist(data: dict) -> dict:
@@ -30,11 +30,11 @@ def save_yaml(path: str | Path, data: dict) -> None:
 
 
 def load_portfolio() -> dict:
-    return load_yaml(CONFIG_DIR / "portfolio.yaml")
+    return load_yaml(DATA_DIR / "portfolio.yaml")
 
 
 def load_watchlist() -> dict:
-    path = CONFIG_DIR / "watchlist.yaml"
+    path = DATA_DIR / "watchlist.yaml"
     if not path.exists():
         return {"tickers": []}
     data = load_yaml(path)
@@ -44,24 +44,32 @@ def load_watchlist() -> dict:
 
 
 def save_watchlist(data: dict) -> None:
-    save_yaml(CONFIG_DIR / "watchlist.yaml", _sort_watchlist(data))
+    save_yaml(DATA_DIR / "watchlist.yaml", _sort_watchlist(data))
+
+
+def _decisions_log_path() -> Path:
+    mode = os.getenv("RUN_MODE", "test").lower()
+    filename = (
+        "decisions_log.yaml" if mode == "production" else "decisions_log_test.yaml"
+    )
+    return DATA_DIR / filename
 
 
 def load_decisions_log() -> list:
-    data = load_yaml(CONFIG_DIR / "decisions_log.yaml")
+    data = load_yaml(_decisions_log_path())
     return data.get("decisions", [])
 
 
 def save_decisions_log(decisions: list) -> None:
-    save_yaml(CONFIG_DIR / "decisions_log.yaml", {"decisions": decisions})
+    save_yaml(_decisions_log_path(), {"decisions": decisions})
 
 
 def load_system_insights() -> dict:
-    return load_yaml(CONFIG_DIR / "system_insights.yaml")
+    return load_yaml(DATA_DIR / "system_insights.yaml")
 
 
 def save_system_insights(data: dict) -> None:
-    save_yaml(CONFIG_DIR / "system_insights.yaml", data)
+    save_yaml(DATA_DIR / "system_insights.yaml", data)
 
 
 def get_llm_config() -> dict:

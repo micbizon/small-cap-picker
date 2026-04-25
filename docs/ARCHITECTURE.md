@@ -7,7 +7,7 @@ kapitalizacji — obszaru gdzie duże fundusze instytucjonalne nie mogą efektyw
 Decyzje inwestycyjne oparte o framework "Costco Algorithm": spółki z flywheel'em reinwestującym
 korzyści skali w niższe ceny / wyższą wartość dla klienta końcowego.
 
-**Zakres kapitalizacji:** $100M – $25B (small/mid-cap)  
+**Zakres kapitalizacji:** $1B – $100B (small/mid/large-cap)  
 **Horyzont inwestycyjny:** 3–10 lat per pozycja  
 **Liczba pozycji:** 3–7 jednocześnie  
 **Filozofia:** concentrated, high-conviction, long-only
@@ -69,9 +69,9 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 ┌─────────────────────▼───────────────────────────────────┐
 │  WARSTWA 3: Selekcja                                    │
 │  Ranking weighted score z warstwy 2                     │
-│  Wagi: Fundamental 40%, Sentiment 25%,                  │
-│        Technical 20%, Ownership 15%                     │
-│  + Spółki z portfolio (zawsze przechodzą)               │
+│  Wagi: Fundamental 35%, Ownership 30%,                  │
+│        Sentiment 20%, Technical 15%                     │
+│  Top 20 kandydatów + spółki z portfolio (zawsze)        │
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
@@ -112,13 +112,15 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 ## Struktura plików projektu
 
 ```
-/small-cap-picker
+/flywheel-picker
 │
 ├── /docs
 │   ├── ARCHITECTURE.md
 │   ├── PHILOSOPHY.md
 │
 ├── /prompts
+│   ├── CORE_RULES.md          ← 5 kryteriów flywheel'u (injektowane do agentów)
+│   ├── RESPONSE_RULES.md      ← zasady formatu: tylko JSON, MAX 30 słów per pole
 │   ├── /agents
 │   │   ├── 01_prescreener.md
 │   │   ├── 02a_fundamental.md
@@ -133,14 +135,14 @@ Spółka przechodzi przez system tylko jeśli posiada strukturalne cechy flywhee
 │   │   ├── 04c_premortem_synthesizer.md
 │   │   └── 05_portfolio_manager.md
 │   └── /system
-│       ├── idea_generation.md
 │       └── feedback_loop.md
 │
-├── /config
-│   ├── portfolio.yaml         ← aktualne pozycje i ceny wejścia
-│   ├── watchlist.yaml         ← spółki do obserwacji
-│   ├── decisions_log.yaml     ← historia decyzji BUY/ADD/HOLD/SELL
-│   └── system_insights.yaml   ← accuracy agentów i wzorce błędów
+├── /data
+│   ├── portfolio.yaml              ← aktualne pozycje i ceny wejścia
+│   ├── watchlist.yaml              ← spółki do obserwacji
+│   ├── decisions_log.yaml          ← historia decyzji (produkcja, RUN_MODE=production)
+│   ├── decisions_log_test.yaml     ← historia decyzji (testy, RUN_MODE=test)
+│   └── system_insights.yaml        ← accuracy agentów i wzorce błędów
 │
 ├── /src
 │   ├── /layer0_ideas … /layer6_feedback
@@ -214,7 +216,7 @@ feedback_12m: null
 ## Źródła pomysłów na spółki (Warstwa 0)
 
 **Zaimplementowane:**
-- Finviz: market cap $100M–$25B, revenue growth YoY > 15%, insider ownership > 10%
+- Finviz: market cap $1B – $100B, revenue growth YoY > 15%, insider ownership > 10%
 - OpenInsider: insider buying CEO/CFO (aktualnie stub — endpoint niedostępny)
 
 **Planowane:**

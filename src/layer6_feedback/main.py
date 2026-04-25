@@ -1,12 +1,14 @@
 import logging
 from datetime import date, timedelta
 
-from shared.config_loader import load_decisions_log, save_decisions_log
+from shared.config_loader import DATA_DIR, load_yaml, save_yaml
 
 from .feedback_agent import run_feedback
 from .insights_updater import update_system_insights
 
 logger = logging.getLogger(__name__)
+
+_PROD_LOG = DATA_DIR / "decisions_log.yaml"
 
 _6M = timedelta(days=180)
 _12M = timedelta(days=365)
@@ -17,7 +19,8 @@ def _parse_date(date_str: str) -> date:
 
 
 def run_feedback_loop() -> None:
-    decisions = load_decisions_log()
+    # Zawsze produkcja — ignoruje RUN_MODE
+    decisions = load_yaml(_PROD_LOG).get("decisions", [])
     today = date.today()
     changed = False
 
@@ -40,7 +43,7 @@ def run_feedback_loop() -> None:
             changed = True
 
     if changed:
-        save_decisions_log(decisions)
+        save_yaml(_PROD_LOG, {"decisions": decisions})
         logger.info("[feedback] decisions_log.yaml zaktualizowany")
     else:
         logger.info("[feedback] Brak decyzji wymagających feedbacku")

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-04-25 — Rename config/ → data/
+
+Katalog `config/` przemianowany na `data/` — wszystkie pliki YAML (`portfolio.yaml`, `watchlist.yaml`, `decisions_log.yaml`, `decisions_log_test.yaml`, `system_insights.yaml`) to dynamiczny stan systemu generowany w runtime, nie konfiguracja parametrów. W `config_loader.py` zmieniono nazwę stałej `CONFIG_DIR` → `DATA_DIR` (replace_all) i ścieżkę `"config"` → `"data"`; `layer6_feedback/main.py` zaktualizowany w imporcie i w `_PROD_LOG`; `.gitignore` i `ARCHITECTURE.md` zaktualizowane.
+
+---
+
+## 2026-04-25 — TASK-028: Oddzielenie decyzji produkcyjnych od testowych
+
+Dodano prywatną funkcję `_decisions_log_path()` w `config_loader.py` — czyta `RUN_MODE` z `.env` (default: `"test"`) i zwraca ścieżkę do `decisions_log.yaml` (produkcja) lub `decisions_log_test.yaml` (testy); `load_decisions_log()` i `save_decisions_log()` korzystają z tej funkcji. W `layer6_feedback/main.py` zastąpiono import `load_decisions_log`/`save_decisions_log` bezpośrednimi wywołaniami `load_yaml`/`save_yaml` na stałej `_PROD_LOG = CONFIG_DIR / "decisions_log.yaml"` — feedback loop zawsze operuje na produkcji niezależnie od `RUN_MODE`. Stworzono `config/decisions_log_test.yaml` (`decisions: []`), dodano `RUN_MODE=test` do `.env` i `config/decisions_log_test.yaml` do `.gitignore`.
+
+---
+
 ## 2026-04-25 — TASK-027: Decision matrix w portfolio managerze
 
 Z `context_builder.py` usunięto sekcję `CORE INVESTMENT RULES` (wywołanie `load_core_rules()` i odpowiadający import) — jej treść pokrywała się z hardkodowanymi regułami w prompcie, generując duplikację w kontekście wysyłanym do LLM. W `05_portfolio_manager.md` zastąpiono jakościową sekcję "ZASADA WYBORU AKCJI" trzystopniową matrycą decyzyjną (KROK 1: wypełnienie 7 pól liczbowych z danych warstw 2/4; KROK 2: mechaniczne reguły progowe dla BUY/PASS/SELL/ADD/HOLD; KROK 3: uzasadnienie bez reinterpretacji); usunięto placeholder `{{ PRICE_CONTEXT }}` który nigdy nie był podmieniony w `main.py` (cena jest już w FULL_CONTEXT przez sekcję STAN PORTFELA); zaktualizowano opis pola `rationale` w schemacie JSON do formatu `"Matryca: flywheel=X/5, bull=X, bear=X, upside=Xx, HIGH_risks=X."`.

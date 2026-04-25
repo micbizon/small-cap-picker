@@ -39,3 +39,4 @@ Thumbs.db
 
 # Logs
 logs/
+data/decisions_log_test.yaml
