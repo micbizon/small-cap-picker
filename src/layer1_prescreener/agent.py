@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from shared.context import load_core_rules
+from shared.context import load_core_rules, read_template
 from shared.llm_client import call_llm
 from shared.logging_config import log_agent_result
 
@@ -13,9 +13,10 @@ PROMPT_PATH = (
 
 
 def _load_prompt(ticker: str) -> str:
-    template = PROMPT_PATH.read_text(encoding="utf-8")
-    return template.replace("{{ CORE_RULES }}", load_core_rules()).replace(
-        "[TICKER]", ticker
+    return (
+        read_template(PROMPT_PATH)
+        .replace("{{ CORE_RULES }}", load_core_rules())
+        .replace("[TICKER]", ticker)
     )
 
 

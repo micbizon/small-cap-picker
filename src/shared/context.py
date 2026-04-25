@@ -1,15 +1,17 @@
+from functools import lru_cache
 from pathlib import Path
 
 PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts"
 
 
-def _load_response_rules() -> str:
-    return (PROMPTS_DIR / "RESPONSE_RULES.md").read_text(encoding="utf-8")
+@lru_cache(maxsize=None)
+def read_template(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
 
 
 def load_core_rules() -> str:
     return (
-        (PROMPTS_DIR / "CORE_RULES.md").read_text(encoding="utf-8")
+        read_template(PROMPTS_DIR / "CORE_RULES.md")
         + "\n"
-        + _load_response_rules()
+        + read_template(PROMPTS_DIR / "RESPONSE_RULES.md")
     )

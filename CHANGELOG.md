@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-25 — Naprawa: Too many open files przy dużym watchlist
+
+`get_decision_logger(ticker)` tworzył `FileHandler` dla każdego tickera i nigdy go nie zamykał — 200+ otwartych deskryptorów po prescreenerze wyczerpywało limit OS przed layer2. Naprawy: (1) dodano `close_decision_logger(ticker)` w `logging_config.py`, wywoływane w bloku `finally` po każdym tickerze w `run_prescreener_batch`; (2) wyodrębniono `read_template(path)` z `@lru_cache` do `shared/context.py` — pliki promptów czytane raz, nie per ticker; `load_core_rules()` korzysta z `read_template` zamiast własnego cache; (3) usunięto błędny `@lru_cache` z `_load_prompt` w `layer2/agents.py`, `layer4/agents.py` i `layer1/agent.py` — cache kluczował po unikatowych danych per ticker (nigdy nie trafiał), wszystkie trzy zastąpione wywołaniem `read_template`.
+
+---
+
 ## 2026-04-25 — Naprawa: błąd parsowania JSON w prescreenerze nie wysadza pipeline'u
 
 Ticker `PL` (Planet Labs, NYSE) spowodował konwersacyjną odpowiedź Claude zamiast JSON — model zinterpretował dwuliterowy ticker jako kod języka polskiego. Nieobsłużony `ValueError` przerywał cały pipeline. W `run_prescreener_batch` dodano `try/except` wokół `run_prescreener(ticker)` — wyjątek jest logowany jako `WARNING` i ticker jest traktowany jako REJECT, pipeline kontynuuje działanie. Przy okazji naprawiono składnię Python 2 w `llm_client.py` linia 64: `except json.JSONDecodeError, ValueError:` → `except (json.JSONDecodeError, ValueError):`.

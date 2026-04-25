@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from shared.config_loader import get_max_workers
-from shared.context import load_core_rules
+from shared.context import load_core_rules, read_template
 from shared.llm_client import call_llm
 from shared.logging_config import log_agent_result
 from shared.market_data import get_price_context
@@ -27,9 +27,9 @@ def _load_prompt(
     extra: dict = None,
     price_context: str = "",
 ) -> str:
-    template = (PROMPTS_DIR / filename).read_text(encoding="utf-8")
     prompt = (
-        template.replace("{{ CORE_RULES }}", load_core_rules())
+        read_template(PROMPTS_DIR / filename)
+        .replace("{{ CORE_RULES }}", load_core_rules())
         .replace("[TICKER]", ticker)
         .replace(
             "[LAYER2_CONTEXT]", json.dumps(layer2_context, ensure_ascii=False, indent=2)
@@ -45,9 +45,9 @@ def _load_prompt(
 def _load_synthesizer_prompt(
     filename: str, ticker: str, analyses_json: str, n: int
 ) -> str:
-    template = (PROMPTS_DIR / filename).read_text(encoding="utf-8")
     return (
-        template.replace("{{ CORE_RULES }}", load_core_rules())
+        read_template(PROMPTS_DIR / filename)
+        .replace("{{ CORE_RULES }}", load_core_rules())
         .replace("[TICKER]", ticker)
         .replace("[N]", str(n))
         .replace("[BULL_ANALYSES]", analyses_json)

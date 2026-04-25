@@ -73,6 +73,16 @@ def log_agent_result(ticker: str, agent_name: str, result: dict) -> None:
     dec_log.debug(f"[{agent_name}] raw_analysis: {result.get('raw_analysis', '')}")
 
 
+def close_decision_logger(ticker: str) -> None:
+    from datetime import date
+
+    name = f"decisions.{date.today().isoformat()}_{ticker}"
+    log = logging.getLogger(name)
+    for handler in log.handlers[:]:
+        handler.close()
+        log.removeHandler(handler)
+
+
 def _cleanup_old_decisions() -> None:
     cutoff = time.time() - (_DECISIONS_MAX_AGE_DAYS * 24 * 3600)
     for f in _DECISIONS_DIR.glob("*.log"):

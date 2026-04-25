@@ -1,5 +1,7 @@
 import logging
 
+from shared.logging_config import close_decision_logger
+
 from .agent import run_prescreener
 
 logger = logging.getLogger(__name__)
@@ -12,15 +14,16 @@ def run_prescreener_batch(tickers: list[str]) -> list[dict]:
     for ticker in tickers:
         try:
             result = run_prescreener(ticker)
+            verdict = result.get("verdict", "UNKNOWN")
+            logger.info(f"[prescreener] {ticker}: {verdict}")
+            if verdict in PASSING_VERDICTS:
+                results.append(result)
         except Exception as e:
             logger.warning(
                 f"[prescreener] {ticker}: błąd parsowania — traktuję jako REJECT ({e})"
             )
-            continue
-        verdict = result.get("verdict", "UNKNOWN")
-        logger.info(f"[prescreener] {ticker}: {verdict}")
-        if verdict in PASSING_VERDICTS:
-            results.append(result)
+        finally:
+            close_decision_logger(ticker)
     passed = len(results)
     logger.info(f"[prescreener] {passed}/{len(tickers)} tickerów przeszło filtr")
     return results
