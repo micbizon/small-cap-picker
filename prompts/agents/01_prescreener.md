@@ -9,7 +9,6 @@ Następnie wydaj werdykt:
 - CONDITIONAL_PASS: 2 kryteria TAK, reszta BRAK_DANYCH (wymaga weryfikacji)
 - REJECT: mniej niż 2 kryteria TAK
 
-Zwróć wyłącznie JSON, bez żadnego tekstu poza JSON:
 {
   "ticker": "",
   "verdict": "PASS|CONDITIONAL_PASS|REJECT",

@@ -42,13 +42,6 @@ NIGDY: HOLD dla spółki której nie masz w portfelu.
 NIGDY: BUY dla spółki którą już masz w portfelu.
 NIGDY: current_position_size_pct > 0 dla spółki której nie masz w portfelu.
 
-Dla każdej decyzji odpowiedz na:
-1. Expected value: prawdopodobieństwo x wynik dla 3 scenariuszy (bull/base/bear)
-2. Wpływ na ekspozycję sektorową i korelację ryzyk w portfolio
-3. Stop-loss: konkretna cena i/lub fundamentalny warunek wyjścia
-4. Kryteria po 12 miesiącach: co musi być prawdą żeby trzymać dalej
-5. Czego NIE robisz i dlaczego (inaction jest równie ważna jak action)
-
 ZASADA GOTÓWKI:
 - Rozmiar nowej pozycji nie może przekroczyć dostępnej gotówki.
 - Jeśli chcesz otworzyć pozycję większą niż dostępna gotówka, musisz jednocześnie sprzedać istniejącą pozycję — wskaż którą i o ile ją redukujesz.
@@ -64,7 +57,7 @@ Przy określaniu rozmiaru pozycji kieruj się tymi zasadami:
   nawet przy bardzo wysokim przekonaniu — możesz dokupić gdy teza się potwierdza
 - Im mniej masz pozycji w portfelu, tym ostrożniej wchodź w kolejną
   (koncentracja rośnie, błąd jest droższy)
-- Uzasadnij rozmiar pozycji w kontekście CAŁEGO portfela, nie tylko tej spółki◊
+- Uzasadnij rozmiar pozycji w kontekście CAŁEGO portfela, nie tylko tej spółki
 
 Twoja odpowiedź musi zawierać wyłącznie blok JSON.
 Żadnego tekstu przed JSON. Żadnego tekstu po JSON.
