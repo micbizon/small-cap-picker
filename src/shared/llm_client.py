@@ -10,10 +10,18 @@ from shared.config_loader import get_llm_config
 logger = logging.getLogger(__name__)
 
 _CLAUDE_MODEL = "claude-sonnet-4-6"
+_claude_client: anthropic.Anthropic | None = None
+
+
+def _get_claude_client(cfg: dict) -> anthropic.Anthropic:
+    global _claude_client
+    if _claude_client is None:
+        _claude_client = anthropic.Anthropic(api_key=cfg["anthropic_api_key"])
+    return _claude_client
 
 
 def _call_claude(prompt: str, cfg: dict) -> str:
-    client = anthropic.Anthropic(api_key=cfg["anthropic_api_key"])
+    client = _get_claude_client(cfg)
     message = client.messages.create(
         model=_CLAUDE_MODEL,
         max_tokens=4096,

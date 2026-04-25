@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-25 — Naprawa: SyncHttpxClientWrapper AttributeError przy zamknięciu
+
+`_call_claude` tworzył nowy `anthropic.Anthropic(...)` przy każdym wywołaniu — przy zamknięciu interpretera Python 3.14 GC niszczył obiekt w momencie gdy `httpx.Client._state` był już niedostępny, generując `AttributeError` w `__del__`. Wprowadzono singleton `_claude_client` inicjalizowany przez `_get_claude_client(cfg)` przy pierwszym wywołaniu i reużywany przez cały czas życia procesu.
+
+---
+
 ## 2026-04-25 — Naprawa: Too many open files przy dużym watchlist
 
 `get_decision_logger(ticker)` tworzył `FileHandler` dla każdego tickera i nigdy go nie zamykał — 200+ otwartych deskryptorów po prescreenerze wyczerpywało limit OS przed layer2. Naprawy: (1) dodano `close_decision_logger(ticker)` w `logging_config.py`, wywoływane w bloku `finally` po każdym tickerze w `run_prescreener_batch`; (2) wyodrębniono `read_template(path)` z `@lru_cache` do `shared/context.py` — pliki promptów czytane raz, nie per ticker; `load_core_rules()` korzysta z `read_template` zamiast własnego cache; (3) usunięto błędny `@lru_cache` z `_load_prompt` w `layer2/agents.py`, `layer4/agents.py` i `layer1/agent.py` — cache kluczował po unikatowych danych per ticker (nigdy nie trafiał), wszystkie trzy zastąpione wywołaniem `read_template`.
